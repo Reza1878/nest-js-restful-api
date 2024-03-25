@@ -20,4 +20,22 @@ export class TestService {
       },
     });
   }
+
+  async deleteContact() {
+    await this.prismaService.contact.deleteMany({
+      where: { username: 'test' },
+    });
+  }
+
+  async createContact() {
+    await this.prismaService.contact.create({
+      data: {
+        username: 'test',
+        first_name: 'test',
+        email: 'test@test.com',
+        last_name: 'test',
+        phone: '082212312312',
+      },
+    });
+  }
 }
