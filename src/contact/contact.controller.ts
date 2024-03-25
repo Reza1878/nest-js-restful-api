@@ -5,9 +5,14 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
 } from '@nestjs/common';
 import { ContactService } from './contact.service';
-import { ContactResponse, CreateContactRequest } from '../model/contact.model';
+import {
+  ContactResponse,
+  CreateContactRequest,
+  UpdateContactRequest,
+} from '../model/contact.model';
 import { WebResponse } from '../model/web.model';
 import { Auth } from '../common/auth/auth.decorator';
 import { User } from '@prisma/client';
@@ -34,6 +39,20 @@ export class ContactController {
     @Param('contactId', ParseIntPipe) id: number,
   ): Promise<WebResponse<ContactResponse>> {
     const res = await this.service.getById(user, id);
+
+    return {
+      data: res,
+    };
+  }
+
+  @Put('/:contactId')
+  async update(
+    @Auth() user: User,
+    @Param('contactId', ParseIntPipe) id: number,
+
+    @Body() request: UpdateContactRequest,
+  ): Promise<WebResponse<ContactResponse>> {
+    const res = await this.service.update(user, id, request);
 
     return {
       data: res,

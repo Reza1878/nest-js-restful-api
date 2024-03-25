@@ -3,7 +3,11 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { Logger } from 'winston';
 import { User } from '@prisma/client';
-import { ContactResponse, CreateContactRequest } from '../model/contact.model';
+import {
+  ContactResponse,
+  CreateContactRequest,
+  UpdateContactRequest,
+} from '../model/contact.model';
 import { ValidationService } from '../common/validation/validation.service';
 import { ContactValidation } from './contact.validation';
 
@@ -56,6 +60,38 @@ export class ContactService {
 
     return {
       ...contact,
+    };
+  }
+
+  async update(
+    user: User,
+    id: number,
+    request: UpdateContactRequest,
+  ): Promise<ContactResponse> {
+    const contact = await this.prismaService.contact.findFirst({
+      where: {
+        username: user.username,
+        id,
+      },
+    });
+
+    if (!contact) throw new HttpException('Contact not found', 404);
+
+    const updateRequest: UpdateContactRequest = this.validationService.validate(
+      ContactValidation.UPDATE,
+      request,
+    );
+
+    await this.prismaService.contact.update({
+      where: { id },
+      data: {
+        ...updateRequest,
+      },
+    });
+
+    return {
+      id,
+      ...updateRequest,
     };
   }
 }
