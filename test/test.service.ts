@@ -38,4 +38,14 @@ export class TestService {
       },
     });
   }
+
+  async getContact() {
+    const contact = await this.prismaService.contact.findFirst({
+      where: {
+        username: 'test',
+      },
+    });
+
+    return contact;
+  }
 }

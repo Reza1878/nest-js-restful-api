@@ -68,4 +68,51 @@ describe('ContactController (e2e)', () => {
       expect(response.body.errors).toBeDefined();
     });
   });
+
+  describe('GET /api/contacts/:contactId', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+      await testService.createContact();
+    });
+    afterEach(async () => {
+      await testService.deleteContact();
+      await testService.deleteUser();
+    });
+
+    it('should be rejected if contact was not found', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/contact/0`)
+        .set('Authorization', 'token');
+
+      expect(response.statusCode).toBe(404);
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it('should be rejected if requested with invalid token', async () => {
+      const contact = await testService.getContact();
+      const response = await request(app.getHttpServer())
+        .get(`/api/contacts/${contact.id}`)
+        .set('Authorization', 'wrong')
+        .send();
+
+      expect(response.statusCode).toBe(401);
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it('should be able to return contact if the contact was found', async () => {
+      const contact = await testService.getContact();
+      const response = await request(app.getHttpServer())
+        .get(`/api/contacts/${contact.id}`)
+        .set('Authorization', 'test')
+        .send();
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data.username).toBe('test');
+      expect(response.body.data.first_name).toBe('test');
+      expect(response.body.data.last_name).toBe('test');
+      expect(response.body.data.email).toBe('test@test.com');
+      expect(response.body.data.phone).toBe('082212312312');
+    });
+  });
 });
